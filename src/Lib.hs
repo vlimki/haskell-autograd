@@ -6,34 +6,41 @@ module Lib
     , calculate
     ) where
 
-data Value = Value Double
-  | Add Value Value
-  | Mul Value Value
+data Value = Value Double String
+  | Add Value Value String
+  | Mul Value Value String
   deriving (Show, Eq)
 
 data Calculated = Leaf Value Double
-  | MulBranch Calculated Calculated Double 
-  | AddBranch Calculated Calculated Double 
+  | MulBranch Calculated Calculated Double String
+  | AddBranch Calculated Calculated Double String
   deriving (Show, Eq)
 
-mul :: Value -> Value -> Value
+mul :: Value -> Value -> String -> Value
 mul = Mul
 
-add :: Value -> Value -> Value
+add :: Value -> Value -> String -> Value
 add = Add
 
 feedForward :: Value -> Calculated
 feedForward v = case v of
-  Value x -> Leaf (Value x) x
-  Add (Value x) (Value y) -> AddBranch (feedForward $ Value x) (feedForward $ Value y) (x + y)
-  Mul (Value x) (Value y) -> MulBranch (feedForward $ Value x) (feedForward $ Value y) (x * y)
-  Add x y -> AddBranch (feedForward x) (feedForward y) (calculate x + calculate y)
-  Mul x y -> MulBranch (feedForward x) (feedForward y) (calculate x * calculate y)
+  Value x idv -> Leaf (Value x idv) x
+  Add (Value x idx) (Value y idy) i -> AddBranch (feedForward $ Value x idx) (feedForward $ Value y idy) (x + y) i
+  Mul (Value x idx) (Value y idy) i -> MulBranch (feedForward $ Value x idx) (feedForward $ Value y idy) (x * y) i
+  Add x y i -> AddBranch (feedForward x) (feedForward y) (calculate x + calculate y) i
+  Mul x y i -> MulBranch (feedForward x) (feedForward y) (calculate x * calculate y) i
+
+grad :: Double -> Double
+grad = id
 
 calculate :: Value -> Double
 calculate v = case v of
-  Value x -> x
-  Add (Value x) (Value y) -> x + y
-  Mul (Value x) (Value y) -> x * y
-  Mul x y -> calculate x * calculate y
-  Add x y -> calculate x + calculate y
+  Value x _ -> x
+  Add (Value x _) (Value y _) _ -> x + y
+  Mul (Value x _) (Value y _) _ -> x * y
+  Mul x y _ -> calculate x * calculate y
+  Add x y _-> calculate x + calculate y
+
+--backProp :: Calculated -> Calculated
+-- backProp v = case v of
+-- AddBranch x y 
