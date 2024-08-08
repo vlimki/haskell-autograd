@@ -1,11 +1,11 @@
 module Lib
-    ( Value(..)
-    , mul
-    , add
-    , feedForward
-    , calculate
-    , grad
-    ) where
+  ( Value (..)
+  , mul
+  , add
+  , feedForward
+  , calculate
+  , grad
+  ) where
 
 -- Value is essentially just a convenient API to the engine. Most of the calculations are done with the `Calculated` type instead.
 data Value
@@ -51,11 +51,11 @@ calculate v = case v of
   Add (Value x _) (Value y _) _ -> x + y
   Mul (Value x _) (Value y _) _ -> x * y
   Mul x y _ -> calculate x * calculate y
-  Add x y _-> calculate x + calculate y
+  Add x y _ -> calculate x + calculate y
 
---backProp :: Calculated -> Calculated
+-- backProp :: Calculated -> Calculated
 -- backProp v = case v of
--- AddBranch x y 
+-- AddBranch x y
 
 extractId :: Calculated -> String
 extractId (Leaf _ id') = id'
@@ -66,4 +66,3 @@ extractCalculation :: Calculated -> Double
 extractCalculation (Leaf x _) = x
 extractCalculation (AddBranch _ _ x _) = x
 extractCalculation (MulBranch _ _ x _) = x
-
