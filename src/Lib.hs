@@ -7,6 +7,7 @@ module Lib
     , grad
     ) where
 
+-- Value is essentially just a convenient API to the engine. Most of the calculations are done with the `Calculated` type instead.
 data Value
   = Value Double String
   | Add Value Value String
@@ -25,16 +26,8 @@ mul = Mul
 add :: Value -> Value -> String -> Value
 add = Add
 
-extractId :: Calculated -> String
-extractId (Leaf _ id') = id'
-extractId (AddBranch _ _ _ id') = id'
-extractId (MulBranch _ _ _ id') = id'
-
-extractCalculation :: Calculated -> Double
-extractCalculation (Leaf x _) = x
-extractCalculation (AddBranch _ _ x _) = x
-extractCalculation (MulBranch _ _ x _) = x
-
+-- If the identifier of the term we're looking for doesn't exist in some branch,
+-- we set the gradient of the value to zero, so that it has no effect in the calculations in `grad`.
 idMultiplier :: Calculated -> String -> Double
 idMultiplier v i = if extractId v == i then 1 else 0
 
@@ -63,3 +56,14 @@ calculate v = case v of
 --backProp :: Calculated -> Calculated
 -- backProp v = case v of
 -- AddBranch x y 
+
+extractId :: Calculated -> String
+extractId (Leaf _ id') = id'
+extractId (AddBranch _ _ _ id') = id'
+extractId (MulBranch _ _ _ id') = id'
+
+extractCalculation :: Calculated -> Double
+extractCalculation (Leaf x _) = x
+extractCalculation (AddBranch _ _ x _) = x
+extractCalculation (MulBranch _ _ x _) = x
+
