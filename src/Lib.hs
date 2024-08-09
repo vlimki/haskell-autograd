@@ -5,9 +5,11 @@ module Lib
   , feedForward
   , calculate
   , grad
+  , (!*)
+  , (!+)
   ) where
 
--- Value is essentially just a convenient API to the engine. Most of the calculations are done with the `Calculated` type instead.
+-- Value is essentially just a convenient API to the engine. The calculations are done with the `Calculated` type instead.
 data Value
   = Value Double String
   | Add Value Value String
@@ -16,6 +18,7 @@ data Value
 
 data Calculated
   = Leaf Double String
+  | ReLU Calculated Double String
   | MulBranch Calculated Calculated Double String
   | AddBranch Calculated Calculated Double String
   deriving (Show, Eq)
@@ -25,6 +28,12 @@ mul = Mul
 
 add :: Value -> Value -> String -> Value
 add = Add
+
+(!+) :: Value -> Value -> String -> Value
+(!+) = add
+
+(!*) :: Value -> Value -> String -> Value
+(!*) = mul
 
 -- If the identifier of the term we're looking for doesn't exist in some branch,
 -- we set the gradient of the value to zero, so that it has no effect in the calculations in `grad`.
@@ -41,6 +50,7 @@ feedForward v = case v of
 
 grad :: String -> Calculated -> Double
 grad id' v = case v of
+  ReLU x _ i -> if i == id' then (if extractCalculation x > 0 then 1 else 0) else grad id' x
   AddBranch x y _ i -> if i == id' then 1 else grad id' x + grad id' y
   MulBranch x y _ i -> if i == id' then 1 else (extractCalculation y * grad id' x) + (extractCalculation x * grad id' y)
   x@(Leaf _ _) -> idMultiplier x id'
@@ -59,10 +69,12 @@ calculate v = case v of
 
 extractId :: Calculated -> String
 extractId (Leaf _ id') = id'
+extractId (ReLU _ _ id') = id'
 extractId (AddBranch _ _ _ id') = id'
 extractId (MulBranch _ _ _ id') = id'
 
 extractCalculation :: Calculated -> Double
 extractCalculation (Leaf x _) = x
+extractCalculation (ReLU _ x _) = x
 extractCalculation (AddBranch _ _ x _) = x
 extractCalculation (MulBranch _ _ x _) = x
