@@ -1,1 +1,1 @@
-- [ ] A better system for values (a type that includes fields `grad`, `value` (or `calculation`), etc.
+- [ ] A better system for values (a type that includes fields `grad`, `value` (or `calculation`), etc.)

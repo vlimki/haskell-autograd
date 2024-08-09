@@ -86,11 +86,13 @@ calculate v = case v of
 extractId :: Calculated -> String
 extractId (Leaf _ id') = id'
 extractId (IReLU _ _ id') = id'
+extractId (ISigmoid _ _ id') = id'
 extractId (IAdd _ _ _ id') = id'
 extractId (IMul _ _ _ id') = id'
 
 extractCalculation :: Calculated -> Double
 extractCalculation (Leaf x _) = x
 extractCalculation (IReLU _ x _) = x
+extractCalculation (ISigmoid _ x _) = x
 extractCalculation (IAdd _ _ x _) = x
 extractCalculation (IMul _ _ x _) = x
